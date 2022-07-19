@@ -1,25 +1,21 @@
 import { useState } from "react"
 import { FocusScope } from "@react-aria/focus"
 import Image from "next/image"
-
-type Edit =
-  | {
-      type: "style_transfer"
-      state: "not_started" | "loading" | "done" | "error"
-      result: string
-    }
-  | { type: "none" }
-
-type Node = {
-  source: string
-  edit: Edit
-  children: Array<Node>
-}
+import Container from "./default_container"
+import Node, { Node as NodeType } from "./node"
 
 type State = {
   query: string
-  status: "not_started" | "loading" | "done" | "error"
-  children: Array<Node>
+  status:
+    | { type: "not_started" }
+    | { type: "loading" }
+    | { type: "done" }
+    | { type: "error"; message: string }
+    | {
+        type: "focus_node"
+        node: string
+      }
+  children: Array<NodeType>
 }
 
 async function getImages() {
@@ -45,22 +41,14 @@ function Query({ query }: { query: string }) {
   )
 }
 
-function Container({ children }: { children: React.ReactNode }) {
-  return (
-    <main className="py-16 w-full max-w-7xl mx-auto px-2 xm:px-6 lg:px-8 h-full ">
-      {children}
-    </main>
-  )
-}
-
 export default function App() {
   const [state, setState] = useState<State>({
     query: "",
-    status: "not_started",
+    status: { type: "not_started" },
     children: [],
   })
 
-  switch (state.status) {
+  switch (state.status.type) {
     case "not_started":
       return (
         <Container>
@@ -74,14 +62,15 @@ export default function App() {
               type="submit"
               className="br-2 h-12 bg-indigo-500 shadow-md hover:shadow-lg focus:shadow-lg text-white ml-4 px-4"
               onClick={async () => {
-                setState({ ...state, status: "loading" })
+                setState({ ...state, status: { type: "loading" } })
                 const images = await getImages()
                 const children = images.map((s) => ({
                   source: s,
+                  id: s,
                   edit: { type: "none" as const },
                   children: [],
                 }))
-                setState({ ...state, status: "done", children })
+                setState({ ...state, status: { type: "done" }, children })
               }}
             >
               Generate
@@ -99,6 +88,9 @@ export default function App() {
       )
 
     case "done":
+      const focusNode = (id: string) => {
+        setState({ ...state, status: { type: "focus_node", node: id } })
+      }
       return (
         <Container>
           <FocusScope autoFocus contain restoreFocus>
@@ -106,7 +98,12 @@ export default function App() {
             <div className="grid grid-cols-3 gap-4">
               {state.children.map((node) => {
                 return (
-                  <button className="relative h-48 border-2 border-black hover:border-indigo-500 focus:border-indigo-500 outline-none hover:shadow-md focus:shadow-md">
+                  <button
+                    key={node.id}
+                    className="relative h-48 border-2 border-black hover:border-indigo-500 focus:border-indigo-500 outline-none hover:shadow-md focus:shadow-md"
+                    onSubmit={() => focusNode(node.id)}
+                    onClick={() => focusNode(node.id)}
+                  >
                     <Image layout="fill" src={node.source} alt="image" />
                   </button>
                 )
@@ -116,11 +113,17 @@ export default function App() {
         </Container>
       )
 
+    case "focus_node":
+      const nodeId = state.status.node
+      const node = state.children.find((node) => node.id === nodeId)
+      if (!node) return "YOU DONE FUCKED UP!!!"
+      return <Node node={node} />
+
     default:
       return (
         <Container>
           <span>{state.query}</span>
-          <span>{state.status}...</span>
+          <span>{state.status.type}...</span>
         </Container>
       )
   }
