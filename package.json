@@ -8,19 +8,22 @@
     "start": "next start",
     "lint": "next lint",
     "format": "yarn prettier --write .",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test": "playwright test"
   },
   "dependencies": {
     "@markdoc/markdoc": "^0.1.4",
     "@markdoc/next.js": "^0.1.6",
-    "@radix-ui/react-navigation-menu": "^0.1.2",
-    "@radix-ui/react-popover": "^0.1.6",
     "@react-aria/focus": "^3.6.1",
     "next": "12.2.2",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "uuid": "^8.3.2",
+    "zustand": "^4.0.0-rc.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.24.2",
+    "@types/functional-red-black-tree": "^1.0.1",
     "@types/node": "18.0.4",
     "@types/react": "18.0.15",
     "@types/react-dom": "18.0.6",
