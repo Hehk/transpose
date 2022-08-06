@@ -1,6 +1,7 @@
 import type { Node, NoneEdit } from "../../lib/state"
 import Image from "next/image"
 import React from "react"
+import Canvas from "../canvas"
 
 function EditButton({
   onSubmit,
@@ -16,16 +17,18 @@ function EditButton({
   )
 }
 
-export default function NoneEdit({ node }: { node: Node }) {
+type state = {
+  editMode: "none"
+}
+
+export default function None({ node }: { node: Node }) {
   return (
     <div className="flex">
       <div className="bg-black h-96 w-16">
         <EditButton onSubmit={() => console.log("+")}>+</EditButton>
         <EditButton onSubmit={() => console.log("-")}>-</EditButton>
       </div>
-      <div className="grow relative h-96 mx-4 border-2 border-black">
-        <Image layout="fill" src={node.source} />
-      </div>
+      <Canvas src={node.source} />
       <div className="bg-black h-96 w-16"></div>
     </div>
   )
