@@ -3,8 +3,10 @@ import NoneEdit from "./edit/none_edit"
 import TopLevelEdit from "./edit/top_level_edit"
 import Container from "../components/default_container"
 import { Node } from "../lib/state"
+import Editor from "./editor"
 
 export default function App() {
+  return <Editor />
   const { cursor, tree, updateNode } = useState((state) => ({
     cursor: state.cursor,
     tree: state.tree,
