@@ -55,15 +55,16 @@ export default function Editor({ src = image }: { src?: string }) {
         center: e.point,
         strokeWidth: 10,
         strokeColor: "red",
-        strokeJoin: "round",
+        strokeCap: "round",
       })
+      currentPath.smooth({ type: "continuous" })
       editor.addChild(currentPath)
     }
     image.onMouseDrag = (e: paper.MouseEvent) => {
       currentPath?.add(e.point)
     }
     image.onMouseUp = (e: paper.MouseEvent) => {
-      currentPath?.simplify()
+      // currentPath?.simplify()
       currentPath = undefined
     }
   }, [])
