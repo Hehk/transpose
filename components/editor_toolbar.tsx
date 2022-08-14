@@ -9,19 +9,15 @@ import {
 } from "react-icons/io5"
 import { IconType } from "react-icons"
 
-function modeToIcon(mode: Mode): IconType {
-  switch (mode) {
-    case "draw":
-      return IoBrushOutline
-    case "crop":
-      return IoCropOutline
-    case "style_transfer":
-      return IoImagesOutline
-    case "recenter":
-      return IoLocateOutline
-    case "inpaint":
-      return IoScanOutline
-  }
+const modeToIcon: Record<Mode, IconType> = {
+  draw: IoBrushOutline,
+  crop: IoCropOutline,
+  style_transfer: IoImagesOutline,
+  recenter: IoLocateOutline,
+  inpaint: IoScanOutline,
+
+  // default
+  none: IoBrushOutline,
 }
 
 function EditorButton({ mode }: { mode: Mode }) {
@@ -29,7 +25,7 @@ function EditorButton({ mode }: { mode: Mode }) {
     currentMode: state.mode,
     setMode: state.setMode,
   }))
-  let Icon = modeToIcon(mode)
+  let Icon = modeToIcon[mode]
 
   return (
     <button
@@ -43,16 +39,17 @@ function EditorButton({ mode }: { mode: Mode }) {
 
 export default function EditorToolbar() {
   return (
-    <div className="fixed p-4 w-40">
+    <div className="p-4 w-56 flex-shrink-0">
       <h1 className="w-8 text-center mb-6 bold text-2xl">T</h1>
-      <div className="flex flex-col mb-6">
+      <div className="mb-6 grid grid-cols-6">
         <EditorButton mode="draw" />
         <EditorButton mode="inpaint" />
         <EditorButton mode="crop" />
         <EditorButton mode="style_transfer" />
         <EditorButton mode="recenter" />
+        <EditorButton mode="none" />
       </div>
-      <div className="flex flex-col">
+      <div className="mb-6 grid grid-cols-6">
         <EditorButton mode="draw" />
         <EditorButton mode="crop" />
         <EditorButton mode="style_transfer" />

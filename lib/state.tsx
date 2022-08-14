@@ -14,6 +14,6 @@ type State = {
 }
 
 export default create<State>((set) => ({
-  mode: "none",
+  mode: "inpaint",
   setMode: (newMode) => set(() => ({ mode: newMode })),
 }))

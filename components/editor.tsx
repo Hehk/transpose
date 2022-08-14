@@ -3,25 +3,21 @@ import { PaperScope, Size } from "paper/dist/paper-core"
 import useGlobalState, { Mode } from "../lib/state"
 import DrawTool from "./tools/draw_tool"
 import InpaintTool from "./tools/inpaint_tool"
-const image = "/images/exploit_1.png"
+const imageSrc = "/images/exploit_1.png"
 import EditorStatus from "./editor_status"
 import EditorToolbar from "./editor_toolbar"
 
-// TODO convert to just styles, and have the canvas grab it's container's dimensions
-const canvasOffset = {
-  top: 16,
-  left: 4 * 16,
-  bottom: 4 * 16,
-  right: 16,
-}
-
-function setupTool(scope: InstanceType<typeof PaperScope>, mode: Mode) {
+function setupTool(
+  scope: InstanceType<typeof PaperScope>,
+  image: InstanceType<typeof paper.Raster>,
+  mode: Mode,
+) {
   // Clear out any old tools
   scope.tools.forEach((tool) => tool.remove())
 
   switch (mode) {
     case "draw":
-      new DrawTool(scope)
+      new DrawTool(scope, image)
       break
 
     case "inpaint":
@@ -32,18 +28,17 @@ function setupTool(scope: InstanceType<typeof PaperScope>, mode: Mode) {
 
 function initializePaper(
   canvas: HTMLCanvasElement,
+  container: HTMLDivElement,
   src: string,
-): InstanceType<typeof PaperScope> {
+): [InstanceType<typeof PaperScope>, InstanceType<typeof paper.Raster>] {
   const scope = new PaperScope()
   scope.setup(canvas)
 
   // TODO this whole canvas setup stuff can probably be cleaned up with fresh eyes
   const resize = () => {
-    const width = window.innerWidth - canvasOffset.left - canvasOffset.right
-    const height = window.innerHeight - canvasOffset.top - canvasOffset.bottom
-    canvas.width = width
-    canvas.height = height
-    scope.view.viewSize = new Size(width, height)
+    canvas.width = container.offsetWidth
+    canvas.height = container.offsetHeight
+    scope.view.viewSize = new Size(canvas.width, canvas.height)
   }
   resize()
   addEventListener("resize", resize)
@@ -56,10 +51,11 @@ function initializePaper(
     source: src,
     size: editor.view.size,
     position: editor.view.center,
+    clipMask: true,
   })
   function resizeImage() {
-    const width = window.innerWidth - canvasOffset.left - canvasOffset.right
-    const height = window.innerHeight - canvasOffset.top - canvasOffset.bottom
+    const width = canvas.width
+    const height = canvas.height
     const imageSize = image.size
     const aspectRatio = imageSize.width / imageSize.height
     const container = { width: 0, height: 0 }
@@ -97,36 +93,48 @@ function initializePaper(
     image.position = scope.view.center
   })
 
-  return scope
+  return [scope, image]
 }
 
-export default function Editor({ src = image }: { src?: string }) {
+export default function Editor({}: { src?: string }) {
   const mode = useGlobalState((state) => state.mode)
   const [scope, setScope] = useState<
     InstanceType<typeof PaperScope> | undefined
   >(undefined)
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [image, setImage] = useState<
+    InstanceType<typeof paper.Raster> | undefined
+  >(undefined)
 
   useEffect(() => {
-    if (scope) setupTool(scope, mode)
+    if (scope && image) setupTool(scope, image, mode)
   }, [mode])
 
   useLayoutEffect(() => {
-    if (!canvasRef.current) return
-    const scope = initializePaper(canvasRef.current, image)
-    setupTool(scope, mode)
+    if (!canvasRef.current || !canvasContainerRef.current) return
+    const [scope, image] = initializePaper(
+      canvasRef.current,
+      canvasContainerRef.current,
+      imageSrc,
+    )
     setScope(scope)
+    setImage(image)
+    setupTool(scope, image, mode)
   }, [])
 
   return (
-    <div className="flex-grow">
-      <canvas
-        className="fixed shadow-xl"
-        style={canvasOffset}
-        ref={canvasRef}
-      />
+    <div className="bg-white h-screen flex">
       <EditorToolbar />
-      <EditorStatus />
+      <div
+        ref={canvasContainerRef}
+        className="m-4 shadow-lg flex-grow rounded-lg overflow-hidden relative border-2 border-zinc-800 bg-zinc-200"
+      >
+        <canvas
+          className="absolute top-0 right-0 left-0 bottom-0 z-10"
+          ref={canvasRef}
+        />
+      </div>
     </div>
   )
 }
