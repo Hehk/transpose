@@ -1,4 +1,4 @@
-import { PaperScope, Path, Tool } from "paper/dist/paper-core"
+import { PaperScope, Path, project, Tool } from "paper/dist/paper-core"
 
 export default class InpaintTool {
   tool: InstanceType<typeof Tool>

@@ -33,3 +33,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# I don't want this big boys in git
+models/segmentation/models
