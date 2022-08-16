@@ -6,6 +6,7 @@ export type Mode =
   | "style_transfer"
   | "recenter"
   | "inpaint"
+  | "segmentation"
   | "none"
 
 type State = {
